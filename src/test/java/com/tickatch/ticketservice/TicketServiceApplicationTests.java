@@ -1,10 +1,10 @@
-package com.tickatch.projectinterface;
+package com.tickatch.ticketservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ProjectInterfaceApplicationTests {
+class TicketServiceApplicationTests {
 
   @Test
   void contextLoads() {}
