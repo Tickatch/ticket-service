@@ -10,9 +10,11 @@ import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
 import com.tickatch.ticketservice.ticket.domain.repository.TicketRepository;
 import com.tickatch.ticketservice.ticket.domain.service.ReservationService;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TicketService {
 
   private final TicketRepository ticketRepository;
@@ -55,6 +58,7 @@ public class TicketService {
         Ticket.issue(
             request.reservationId(),
             request.seatId(),
+            request.productId(),
             request.grade(),
             request.seatNumber(),
             request.price(),
@@ -113,5 +117,23 @@ public class TicketService {
   public Page<TicketResponse> getAllTickets(Pageable pageable) {
 
     return ticketRepository.findAll(pageable).map(TicketResponse::from);
+  }
+
+  // 6. 상품 취소 이벤트 처리
+  @Transactional
+  public void invalidateByProductId(Long productId) {
+
+    List<Ticket> tickets = ticketRepository.findAllByProductId(productId);
+
+    if (tickets.isEmpty()) {
+      log.info("취소할 티켓 없음. productId={}", productId);
+      return;
+    }
+
+    for (Ticket ticket : tickets) {
+      ticket.cancel();
+    }
+
+    log.info("총 {}건의 티켓 취소 완료. productId={}", tickets.size(), productId);
   }
 }

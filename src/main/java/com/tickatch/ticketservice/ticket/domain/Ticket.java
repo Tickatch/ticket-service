@@ -31,6 +31,10 @@ public class Ticket extends AbstractAuditEntity {
   @Column(nullable = false)
   private UUID reservationId;
 
+  // 상품 id
+  @Column(nullable = false)
+  private long productId;
+
   // 좌석 정보
   @Embedded private SeatInfo seatInfo;
 
@@ -56,6 +60,7 @@ public class Ticket extends AbstractAuditEntity {
   public Ticket(
       UUID ticketId,
       UUID reservationId,
+      long productId,
       long seatId,
       String grade,
       String seatNumber,
@@ -74,6 +79,7 @@ public class Ticket extends AbstractAuditEntity {
   public static Ticket issue(
       UUID reservationId,
       long seatId,
+      long productId,
       String grade,
       String seatNumber,
       Long price,
@@ -81,6 +87,7 @@ public class Ticket extends AbstractAuditEntity {
     return Ticket.builder()
         .reservationId(reservationId)
         .seatId(seatId)
+        .productId(productId)
         .grade(grade)
         .seatNumber(seatNumber)
         .price(price)

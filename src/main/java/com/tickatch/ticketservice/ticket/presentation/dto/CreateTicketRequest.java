@@ -8,6 +8,7 @@ import java.util.UUID;
 public record CreateTicketRequest(
     @NotNull UUID reservationId,
     Long seatId,
+    Long productId,
     @NotBlank String seatNumber,
     @NotBlank String grade,
     Long price,
@@ -16,6 +17,7 @@ public record CreateTicketRequest(
     return new TicketRequest(
         this.reservationId(),
         this.seatId(),
+        this.productId(),
         this.grade(),
         this.seatNumber(),
         this.price(),

@@ -5,6 +5,7 @@ import java.util.UUID;
 public record TicketRequest(
     UUID reservationId,
     long seatId,
+    long productId,
     String grade,
     String seatNumber,
     Long price,
