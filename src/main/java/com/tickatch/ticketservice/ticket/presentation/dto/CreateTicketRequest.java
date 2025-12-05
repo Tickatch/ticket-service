@@ -11,14 +11,14 @@ public record CreateTicketRequest(
     @NotBlank String seatNumber,
     @NotBlank String grade,
     Long price,
-    String receiveMethod
-) {
+    String receiveMethod) {
   public TicketRequest toTicketRequest() {
     return new TicketRequest(
         this.reservationId(),
         this.seatId(),
         this.grade(),
         this.seatNumber(),
-        this.price());
+        this.price(),
+        this.receiveMethod);
   }
 }

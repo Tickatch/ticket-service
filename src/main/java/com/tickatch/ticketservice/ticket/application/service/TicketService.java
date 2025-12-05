@@ -1,15 +1,15 @@
 package com.tickatch.ticketservice.ticket.application.service;
 
+import com.tickatch.ticketservice.ticket.application.dto.TicketActionResponse;
+import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
+import com.tickatch.ticketservice.ticket.application.dto.TicketRequest;
+import com.tickatch.ticketservice.ticket.application.dto.TicketResponse;
 import com.tickatch.ticketservice.ticket.domain.Ticket;
 import com.tickatch.ticketservice.ticket.domain.TicketId;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
 import com.tickatch.ticketservice.ticket.domain.repository.TicketRepository;
 import com.tickatch.ticketservice.ticket.domain.service.ReservationService;
-import com.tickatch.ticketservice.ticket.application.dto.TicketActionResponse;
-import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
-import com.tickatch.ticketservice.ticket.application.dto.TicketRequest;
-import com.tickatch.ticketservice.ticket.application.dto.TicketResponse;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +57,8 @@ public class TicketService {
             request.seatId(),
             request.grade(),
             request.seatNumber(),
-            request.price());
+            request.price(),
+            request.receiveMethod());
 
     // 5) 저장
     ticketRepository.save(newTicket);

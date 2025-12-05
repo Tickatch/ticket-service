@@ -44,9 +44,6 @@ public class Ticket extends AbstractAuditEntity {
   @Column(nullable = false)
   private TicketStatus status;
 
-  // 티켓 발행 시간
-  private LocalDateTime issuedAt;
-
   // 티켓 사용 시간
   private LocalDateTime usedAt;
 
@@ -57,27 +54,37 @@ public class Ticket extends AbstractAuditEntity {
   // 1. 티켓 생성
   @Builder(access = AccessLevel.PRIVATE)
   public Ticket(
-      UUID ticketId, UUID reservationId, long seatId, String grade, String seatNumber, Long price) {
+      UUID ticketId,
+      UUID reservationId,
+      long seatId,
+      String grade,
+      String seatNumber,
+      Long price,
+      String receiveMethod) {
     this.id = TicketId.of(ticketId);
     this.reservationId = Objects.requireNonNull(reservationId, "ReservationId cannot be null");
     this.seatInfo =
         SeatInfo.builder().seatId(seatId).grade(grade).seatNumber(seatNumber).price(price).build();
 
-    this.receiveMethod = ReceiveMethod.ON_SITE;
     this.status = TicketStatus.ISSUED;
-    this.issuedAt = LocalDateTime.now();
     this.usedAt = null;
   }
 
   // 팩토리 메서드
   public static Ticket issue(
-      UUID reservationId, long seatId, String grade, String seatNumber, Long price) {
+      UUID reservationId,
+      long seatId,
+      String grade,
+      String seatNumber,
+      Long price,
+      String receiveMethod) {
     return Ticket.builder()
         .reservationId(reservationId)
         .seatId(seatId)
         .grade(grade)
         .seatNumber(seatNumber)
         .price(price)
+        .receiveMethod(receiveMethod)
         .build();
   }
 

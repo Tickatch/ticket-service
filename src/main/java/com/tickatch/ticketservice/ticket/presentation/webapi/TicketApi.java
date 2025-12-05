@@ -52,8 +52,7 @@ public class TicketApi {
   @GetMapping
   public PageResponse<TicketResponse> getAllTickets(
       @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
-      Pageable pageable
-  ) {
+          Pageable pageable) {
     return PageResponse.from(ticketService.getAllTickets(pageable));
   }
 }

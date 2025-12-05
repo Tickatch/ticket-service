@@ -7,4 +7,5 @@ public record TicketRequest(
     long seatId,
     String grade,
     String seatNumber,
-    Long price) {}
+    Long price,
+    String receiveMethod) {}
