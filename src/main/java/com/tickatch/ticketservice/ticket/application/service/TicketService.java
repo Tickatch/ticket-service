@@ -131,7 +131,11 @@ public class TicketService {
     }
 
     for (Ticket ticket : tickets) {
-      ticket.cancel();
+      try {
+        ticket.cancel();
+      } catch (TicketException e) {
+        log.warn("이미 사용된 티켓, 취소 불가. ticketId={}, reason={}", ticket.getId(), e.getMessage());
+      }
     }
 
     log.info("총 {}건의 티켓 취소 완료. productId={}", tickets.size(), productId);
