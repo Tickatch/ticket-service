@@ -1,15 +1,15 @@
 package com.tickatch.ticketservice.ticket.application.service;
 
-import com.tickatch.ticketservice.ticket.application.dto.TicketActionDto;
-import com.tickatch.ticketservice.ticket.application.dto.TicketCreateCommand;
-import com.tickatch.ticketservice.ticket.application.dto.TicketDetailDto;
-import com.tickatch.ticketservice.ticket.application.dto.TicketDto;
 import com.tickatch.ticketservice.ticket.domain.Ticket;
 import com.tickatch.ticketservice.ticket.domain.TicketId;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
 import com.tickatch.ticketservice.ticket.domain.repository.TicketRepository;
 import com.tickatch.ticketservice.ticket.domain.service.ReservationService;
+import com.tickatch.ticketservice.ticket.application.dto.TicketActionResponse;
+import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
+import com.tickatch.ticketservice.ticket.application.dto.TicketRequest;
+import com.tickatch.ticketservice.ticket.application.dto.TicketResponse;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class TicketService {
 
   // 1. 티켓 발행
   @Transactional
-  public TicketDto createTicket(TicketCreateCommand request) {
+  public TicketResponse createTicket(TicketRequest request) {
 
     // 1) 예매 확정 여부 확인
     if (!reservationService.isConfirmed(request.reservationId())) {
@@ -62,12 +62,12 @@ public class TicketService {
     // 5) 저장
     ticketRepository.save(newTicket);
 
-    return TicketDto.from(newTicket);
+    return TicketResponse.from(newTicket);
   }
 
   // 2. 티켓 사용
   @Transactional
-  public TicketActionDto useTicket(UUID ticketId) {
+  public TicketActionResponse useTicket(UUID ticketId) {
     // 티켓 id로 조회
     Ticket ticket =
         ticketRepository
@@ -76,12 +76,12 @@ public class TicketService {
 
     ticket.use();
 
-    return TicketActionDto.fromUsed(ticket);
+    return TicketActionResponse.fromUsed(ticket);
   }
 
   // 3. 티켓 취소
   @Transactional
-  public TicketActionDto cancelTicket(UUID ticketId) {
+  public TicketActionResponse cancelTicket(UUID ticketId) {
 
     // 티켓 id로 조회
     Ticket ticket =
@@ -91,12 +91,12 @@ public class TicketService {
 
     ticket.cancel();
 
-    return TicketActionDto.fromCanceled(ticket);
+    return TicketActionResponse.fromCanceled(ticket);
   }
 
   // 4. 티켓 상세 조회
   @Transactional(readOnly = true)
-  public TicketDetailDto getTicketDetail(UUID ticketId) {
+  public TicketDetailResponse getTicketDetail(UUID ticketId) {
 
     // 티켓 id로 조회
     Ticket ticket =
@@ -104,13 +104,13 @@ public class TicketService {
             .findById(TicketId.of(ticketId))
             .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
 
-    return TicketDetailDto.from(ticket);
+    return TicketDetailResponse.from(ticket);
   }
 
   // 5. 티켓 목록 조회
   @Transactional(readOnly = true)
-  public Page<TicketDto> getAllTickets(Pageable pageable) {
+  public Page<TicketResponse> getAllTickets(Pageable pageable) {
 
-    return ticketRepository.findAll(pageable).map(TicketDto::from);
+    return ticketRepository.findAll(pageable).map(TicketResponse::from);
   }
 }

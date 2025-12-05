@@ -1,4 +1,4 @@
-package com.tickatch.ticketservice.ticket.presentation.dto;
+package com.tickatch.ticketservice.ticket.application.dto;
 
 import com.tickatch.ticketservice.ticket.domain.Ticket;
 import com.tickatch.ticketservice.ticket.domain.TicketStatus;
