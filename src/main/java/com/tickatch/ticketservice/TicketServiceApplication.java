@@ -2,6 +2,7 @@ package com.tickatch.ticketservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * Spring Boot 애플리케이션의 진입점 클래스.
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 1.0.0
  */
 @SpringBootApplication
+@EnableFeignClients(basePackages = "com.tickatch.ticketservice")
 public class TicketServiceApplication {
 
   /**
