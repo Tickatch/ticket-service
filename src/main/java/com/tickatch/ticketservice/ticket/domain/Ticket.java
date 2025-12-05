@@ -68,8 +68,11 @@ public class Ticket extends AbstractAuditEntity {
       String receiveMethod) {
     this.id = TicketId.of(ticketId);
     this.reservationId = Objects.requireNonNull(reservationId, "ReservationId cannot be null");
+    this.productId = productId;
+
     this.seatInfo =
         SeatInfo.builder().seatId(seatId).grade(grade).seatNumber(seatNumber).price(price).build();
+    this.receiveMethod = ReceiveMethod.valueOf(receiveMethod);
 
     this.status = TicketStatus.ISSUED;
     this.usedAt = null;
