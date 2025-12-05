@@ -2,9 +2,13 @@ package com.tickatch.ticketservice.ticket.presentation.webapi;
 
 import com.tickatch.ticketservice.ticket.presentation.dto.CreateTicketRequest;
 import io.github.tickatch.common.api.ApiResponse;
+import io.github.tickatch.common.api.PageResponse;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/tickets")
+@RequestMapping("/api/v1/tickets")
 public class TicketApi {
 
   private final TicketService ticketService;
@@ -41,7 +45,11 @@ public class TicketApi {
   }
 
   @GetMapping
-  public ApiResponse<List<GetTicketResponse>> getAllTickets() {
+  public PageResponse<GetTicketResponse> getAllTickets(
+      @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+      Pageable pageable
+  ) {
+    return ticketService.getAllTickets(pageable).map(page -> PageResponse.from(page, GetTicketResponse::from));
     return ApiResponse.success(ticketService.getAllTickets(), "티켓 목록 조회를 완료했습니다.");
   }
 }
