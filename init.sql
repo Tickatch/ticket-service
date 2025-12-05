@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS p_ticket;
 CREATE TABLE p_ticket (
                           id              UUID                NOT NULL PRIMARY KEY,
                           reservation_id  UUID                NOT NULL,
+                          product_id      BIGINT              NOT NULL,
                           seat_id         BIGINT              NOT NULL,
                           seat_number     VARCHAR(20)         NOT NULL,
                           grade           VARCHAR(20)         NOT NULL,
