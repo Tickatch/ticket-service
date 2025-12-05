@@ -18,7 +18,7 @@ public class ProductCancelledEventConsumer {
   private final TicketService ticketService;
 
   /**
-   * 상품 취소 이벤트를 수신하여 예약을 취소 처리한다.
+   * 상품 취소 이벤트를 수신하여 티켓을 취소 처리한다.
    *
    * @param integrationEvent 통합 이벤트
    */
@@ -34,9 +34,9 @@ public class ProductCancelledEventConsumer {
         event -> {
           ProductCancelledEvent payload = event.getPayloadAs(ProductCancelledEvent.class);
 
-          log.info("예약 취소 처리 시작. productId: {}", payload.getProductId());
+          log.info("티켓 취소 처리 시작. productId: {}", payload.getProductId());
           ticketService.invalidateByProductId(payload.getProductId());
-          log.info("예약 취소 처리 완료. productId: {}", payload.getProductId());
+          log.info("티켓 취소 처리 완료. productId: {}", payload.getProductId());
         });
   }
 }
