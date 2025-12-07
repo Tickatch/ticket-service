@@ -1,5 +1,6 @@
 package com.tickatch.ticketservice.ticket.application.dto;
 
+import com.tickatch.ticketservice.ticket.domain.ReceiveMethod;
 import java.util.UUID;
 
 public record TicketRequest(
@@ -9,4 +10,4 @@ public record TicketRequest(
     String grade,
     String seatNumber,
     Long price,
-    String receiveMethod) {}
+    ReceiveMethod receiveMethod) {}

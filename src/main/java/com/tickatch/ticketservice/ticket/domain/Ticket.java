@@ -65,14 +65,14 @@ public class Ticket extends AbstractAuditEntity {
       String grade,
       String seatNumber,
       Long price,
-      String receiveMethod) {
+      ReceiveMethod receiveMethod) {
     this.id = TicketId.of(ticketId);
     this.reservationId = Objects.requireNonNull(reservationId, "ReservationId cannot be null");
     this.productId = productId;
 
     this.seatInfo =
         SeatInfo.builder().seatId(seatId).grade(grade).seatNumber(seatNumber).price(price).build();
-    this.receiveMethod = ReceiveMethod.valueOf(receiveMethod);
+    this.receiveMethod = receiveMethod;
 
     this.status = TicketStatus.ISSUED;
     this.usedAt = null;
@@ -86,7 +86,7 @@ public class Ticket extends AbstractAuditEntity {
       String grade,
       String seatNumber,
       Long price,
-      String receiveMethod) {
+      ReceiveMethod receiveMethod) {
     return Ticket.builder()
         .reservationId(reservationId)
         .seatId(seatId)
