@@ -28,31 +28,43 @@ public class TicketApi {
 
   private final TicketService ticketService;
 
+  // 1. 티켓 생성
   @PostMapping
   public ApiResponse<TicketResponse> createTicket(@Valid @RequestBody CreateTicketRequest request) {
     TicketRequest ticketRequest = request.toTicketRequest();
     return ApiResponse.success(ticketService.createTicket(ticketRequest), "티켓이 발행되었습니다.");
   }
 
+  // 2. 티켓 사용
   @PostMapping("/{id}/use")
   public ApiResponse<TicketActionResponse> useTicket(@PathVariable UUID id) {
     return ApiResponse.success(ticketService.useTicket(id), "티켓이 사용되었습니다.");
   }
 
+  // 3. 티켓 취소
   @PostMapping("/{id}/cancel")
   public ApiResponse<TicketActionResponse> cancelTicket(@PathVariable UUID id) {
     return ApiResponse.success(ticketService.cancelTicket(id), "티켓이 취소되었습니다.");
   }
 
+  // 4. 티켓 상세 조회
   @GetMapping("/{id}")
   public ApiResponse<TicketDetailResponse> getTicketDetail(@PathVariable UUID id) {
     return ApiResponse.success(ticketService.getTicketDetail(id), "티켓 조회를 완료했습니다.");
   }
 
+  // 5. 티켓 목록 조회
   @GetMapping
   public PageResponse<TicketResponse> getAllTickets(
       @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
           Pageable pageable) {
     return PageResponse.from(ticketService.getAllTickets(pageable));
+  }
+
+  // 6. 예매 취소에 따른 티켓 취소
+  @PostMapping("/{reservationId}/cancel")
+  public ApiResponse<Void> cancelByReservationId(@PathVariable UUID reservationId) {
+    ticketService.cancelTicket(reservationId);
+    return ApiResponse.success();
   }
 }
