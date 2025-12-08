@@ -34,7 +34,7 @@ public class TicketService {
 
     // 1) 예매 확정 여부 확인
     if (!reservationService.isConfirmed(request.reservationId())) {
-      throw new TicketException(TicketErrorCode.RESERVATION_NOT_FOUND);
+      throw new TicketException(TicketErrorCode.RESERVATION_NOT_CONFIRMED);
     }
 
     // 2) 기존 티켓 조회

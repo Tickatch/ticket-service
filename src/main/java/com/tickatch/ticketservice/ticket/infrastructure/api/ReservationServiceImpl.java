@@ -19,15 +19,7 @@ public class ReservationServiceImpl implements ReservationService {
   public boolean isConfirmed(UUID reservationId) {
     ApiResponse<Boolean> response = reservationFeignClient.isConfirmed(reservationId);
 
-    if (response == null) {
-      throw new TicketException(TicketErrorCode.RESERVATION_SERVICE_ERROR);
-    }
-
     Boolean confirmed = response.getData();
-
-    if (confirmed == null) {
-      throw new TicketException(TicketErrorCode.RESERVATION_SERVICE_INVALID_RESPONSE);
-    }
 
     return confirmed;
   }
