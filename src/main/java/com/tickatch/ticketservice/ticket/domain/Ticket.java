@@ -1,0 +1,102 @@
+package com.tickatch.ticketservice.ticket.domain;
+
+import com.tickatch.ticketservice.global.domain.AbstractAuditEntity;
+import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
+import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Table(name = "p_ticket")
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Ticket extends AbstractAuditEntity {
+
+  // 티켓 id
+  @EmbeddedId private TicketId id;
+
+  // 예매 id
+  @Column(nullable = false)
+  private UUID reservationId;
+
+  // 좌석 정보
+  @Embedded private SeatInfo seatInfo;
+
+  // 티켓 수령 방법
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ReceiveMethod receiveMethod;
+
+  // 티켓 상태
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TicketStatus status;
+
+  // 티켓 발행 시간
+  private LocalDateTime issuedAt;
+
+  // 티켓 사용 시간
+  private LocalDateTime usedAt;
+
+  //==================================
+
+  // 생성
+
+  // 1. 티켓 생성
+  @Builder
+  public Ticket(
+      UUID ticketId,
+      UUID reservationId,
+      long seatId,
+      String grade,
+      String seatNumber,
+      Long price
+  ){
+    this.id = TicketId.of(ticketId);
+    this.reservationId = Objects.requireNonNull(reservationId, "ReservationId cannot be null");
+    this.seatInfo = SeatInfo.builder()
+        .seatId(seatId)
+        .grade(grade)
+        .seatNumber(seatNumber)
+        .price(price)
+        .build();
+
+    this.receiveMethod = ReceiveMethod.ON_SITE;
+    this.status = TicketStatus.ISSUED;
+    this.issuedAt = LocalDateTime.now();
+    this.usedAt = null;
+  }
+
+  //==================================
+
+  // 상태 변경
+
+  // 1. 티켓 사용
+  public void use() {
+    if (this.status != TicketStatus.ISSUED) {
+      throw new TicketException(TicketErrorCode.INVALID_STATUS_FOR_USE);
+    }
+    this.status = TicketStatus.USED;
+    this.usedAt = LocalDateTime.now();
+  }
+
+  // 2. 티켓 취소
+  public void cancel() {
+    if (this.status == TicketStatus.USED) {
+      throw new TicketException(TicketErrorCode.ALREADY_USED);
+    }
+    this.status = TicketStatus.CANCELED;
+  }
+}
