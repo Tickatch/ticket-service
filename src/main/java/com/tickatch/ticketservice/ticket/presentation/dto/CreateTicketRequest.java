@@ -22,7 +22,6 @@ public record CreateTicketRequest(
         this.grade(),
         this.seatNumber(),
         this.price(),
-        this.receiveMethod
-    );
+        this.receiveMethod);
   }
 }

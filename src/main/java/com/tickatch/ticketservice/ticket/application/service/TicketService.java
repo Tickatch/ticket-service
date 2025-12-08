@@ -142,4 +142,22 @@ public class TicketService {
 
     log.info("총 {}건의 티켓 취소 완료. productId={}", cancelledCount, productId);
   }
+
+  // 7. 예매 id로 티켓 취소
+  @Transactional
+  public void cancelByReservationID(UUID reservationId) {
+
+    Ticket ticket =
+        ticketRepository
+            .findByReservationId(reservationId)
+            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+
+    try {
+      ticket.cancel();
+    } catch (Exception e) {
+      log.warn("예매 id가 reservationId={}인 티켓 취소 실패", reservationId);
+    }
+
+    log.info("예매 id가 reservationId={}인 티켓 취소 성공", reservationId);
+  }
 }
