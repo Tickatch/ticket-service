@@ -73,11 +73,9 @@ public class TicketService {
   // 2. 티켓 사용
   @Transactional
   public TicketActionResponse useTicket(UUID ticketId) {
+
     // 티켓 id로 조회
-    Ticket ticket =
-        ticketRepository
-            .findById(TicketId.of(ticketId))
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = getTicketOrThrow(ticketId);
 
     ticket.use();
 
@@ -89,10 +87,7 @@ public class TicketService {
   public TicketActionResponse cancelTicket(UUID ticketId) {
 
     // 티켓 id로 조회
-    Ticket ticket =
-        ticketRepository
-            .findById(TicketId.of(ticketId))
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = getTicketOrThrow(ticketId);
 
     ticket.cancel();
 
@@ -104,10 +99,7 @@ public class TicketService {
   public TicketDetailResponse getTicketDetail(UUID ticketId) {
 
     // 티켓 id로 조회
-    Ticket ticket =
-        ticketRepository
-            .findById(TicketId.of(ticketId))
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = getTicketOrThrow(ticketId);
 
     return TicketDetailResponse.from(ticket);
   }
@@ -147,6 +139,7 @@ public class TicketService {
   @Transactional
   public void cancelByReservationID(UUID reservationId) {
 
+    // 예매 id로 티켓 조회
     Ticket ticket =
         ticketRepository
             .findByReservationId(reservationId)
@@ -159,5 +152,15 @@ public class TicketService {
     }
 
     log.info("예매 id가 reservationId={}인 티켓 취소 성공", reservationId);
+  }
+
+  //===========================
+  // 메서드 추출
+
+  // 1. 티켓 id로 조회
+  private Ticket getTicketOrThrow(UUID ticketId) {
+    return ticketRepository
+        .findById(TicketId.of(ticketId))
+        .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
   }
 }
