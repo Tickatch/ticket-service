@@ -1,14 +1,15 @@
 package com.tickatch.ticketservice.ticket.application.dto;
 
 import com.tickatch.ticketservice.ticket.domain.Ticket;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record TicketActionResponse(UUID id, String status, String usedAt, String deletedAt) {
+public record TicketActionResponse(UUID id, String status, LocalDateTime usedAt, LocalDateTime canceledAt) {
   public static TicketActionResponse fromUsed(Ticket ticket) {
     return new TicketActionResponse(
         ticket.getId().toUuid(),
         ticket.getStatus().name(),
-        ticket.getUsedAt() != null ? ticket.getUsedAt().toString() : null,
+        ticket.getUsedAt(),
         null);
   }
 
@@ -17,6 +18,6 @@ public record TicketActionResponse(UUID id, String status, String usedAt, String
         ticket.getId().toUuid(),
         ticket.getStatus().name(),
         null,
-        ticket.getDeletedAt() != null ? ticket.getDeletedAt().toString() : null);
+        ticket.getCanceledAt());
   }
 }

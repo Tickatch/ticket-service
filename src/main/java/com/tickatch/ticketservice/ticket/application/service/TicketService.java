@@ -130,17 +130,17 @@ public class TicketService {
       return;
     }
 
-    int cancelledCount = 0;
+    int canceledCount = 0;
     for (Ticket ticket : tickets) {
       try {
         ticket.cancel();
-        cancelledCount++;
+        canceledCount++;
       } catch (TicketException e) {
         log.warn("이미 사용된 티켓, 취소 불가. ticketId={}, reason={}", ticket.getId(), e.getMessage());
       }
     }
 
-    log.info("총 {}건의 티켓 취소 완료. productId={}", cancelledCount, productId);
+    log.info("총 {}건의 티켓 취소 완료. productId={}", canceledCount, productId);
   }
 
   // 7. 예매 id로 티켓 취소

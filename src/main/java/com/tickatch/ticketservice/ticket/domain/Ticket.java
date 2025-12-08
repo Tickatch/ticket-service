@@ -49,7 +49,12 @@ public class Ticket extends AbstractAuditEntity {
   private TicketStatus status;
 
   // 티켓 사용 시간
+  @Column
   private LocalDateTime usedAt;
+
+  // 티켓 취소된 시간
+  @Column
+  private LocalDateTime canceledAt;
 
   // ==================================
 
@@ -76,6 +81,7 @@ public class Ticket extends AbstractAuditEntity {
 
     this.status = TicketStatus.ISSUED;
     this.usedAt = null;
+    this.canceledAt = null;
   }
 
   // 팩토리 메서드
@@ -113,10 +119,11 @@ public class Ticket extends AbstractAuditEntity {
 
   // 2. 티켓 취소
   public void cancel() {
-    if (this.status == TicketStatus.USED) {
-      throw new TicketException(TicketErrorCode.ALREADY_USED);
+    if (this.status != TicketStatus.ISSUED) {
+      throw new TicketException(TicketErrorCode.INVALID_STATUS_FOR_CANCEL);
     }
     this.status = TicketStatus.CANCELED;
+    this.canceledAt = LocalDateTime.now();
   }
 
   // 3. 발행 여부 확인
