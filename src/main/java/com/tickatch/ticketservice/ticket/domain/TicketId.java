@@ -14,15 +14,15 @@ public class TicketId {
 
   private UUID id;
 
-  private TicketId(UUID id){
+  private TicketId(UUID id) {
     this.id = id;
   }
 
-  public static TicketId of(){
+  public static TicketId of() {
     return of(null);
   }
 
-  public static TicketId of(UUID id){
+  public static TicketId of(UUID id) {
     id = Objects.requireNonNullElse(id, UUID.randomUUID());
     return new TicketId(id);
   }

@@ -13,8 +13,7 @@ public class TicketException extends BusinessException {
     super(errorCode, errorArgs);
   }
 
-  public TicketException(ErrorCode errorCode, Throwable cause,
-      Object... errorArgs) {
+  public TicketException(ErrorCode errorCode, Throwable cause, Object... errorArgs) {
     super(errorCode, cause, errorArgs);
   }
 }

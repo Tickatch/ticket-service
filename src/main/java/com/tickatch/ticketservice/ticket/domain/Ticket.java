@@ -44,44 +44,53 @@ public class Ticket extends AbstractAuditEntity {
   @Column(nullable = false)
   private TicketStatus status;
 
-  // 티켓 발행 시간
-  private LocalDateTime issuedAt;
-
   // 티켓 사용 시간
   private LocalDateTime usedAt;
 
-  //==================================
+  // ==================================
 
   // 생성
 
   // 1. 티켓 생성
-  @Builder
+  @Builder(access = AccessLevel.PRIVATE)
   public Ticket(
       UUID ticketId,
       UUID reservationId,
       long seatId,
       String grade,
       String seatNumber,
-      Long price
-  ){
+      Long price,
+      String receiveMethod) {
     this.id = TicketId.of(ticketId);
     this.reservationId = Objects.requireNonNull(reservationId, "ReservationId cannot be null");
-    this.seatInfo = SeatInfo.builder()
+    this.seatInfo =
+        SeatInfo.builder().seatId(seatId).grade(grade).seatNumber(seatNumber).price(price).build();
+
+    this.status = TicketStatus.ISSUED;
+    this.usedAt = null;
+  }
+
+  // 팩토리 메서드
+  public static Ticket issue(
+      UUID reservationId,
+      long seatId,
+      String grade,
+      String seatNumber,
+      Long price,
+      String receiveMethod) {
+    return Ticket.builder()
+        .reservationId(reservationId)
         .seatId(seatId)
         .grade(grade)
         .seatNumber(seatNumber)
         .price(price)
+        .receiveMethod(receiveMethod)
         .build();
-
-    this.receiveMethod = ReceiveMethod.ON_SITE;
-    this.status = TicketStatus.ISSUED;
-    this.issuedAt = LocalDateTime.now();
-    this.usedAt = null;
   }
 
-  //==================================
+  // ==================================
 
-  // 상태 변경
+  // 상태 관련
 
   // 1. 티켓 사용
   public void use() {
@@ -98,5 +107,15 @@ public class Ticket extends AbstractAuditEntity {
       throw new TicketException(TicketErrorCode.ALREADY_USED);
     }
     this.status = TicketStatus.CANCELED;
+  }
+
+  // 3. 발행 여부 확인
+  public boolean isIssued() {
+    return this.status == TicketStatus.ISSUED;
+  }
+
+  // 4. 티켓 사용 여부 확인
+  public boolean isUsed() {
+    return this.status == TicketStatus.USED;
   }
 }
