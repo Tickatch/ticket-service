@@ -31,6 +31,10 @@ public class Ticket extends AbstractAuditEntity {
   @Column(nullable = false)
   private UUID reservationId;
 
+  // 상품 id
+  @Column(nullable = false)
+  private long productId;
+
   // 좌석 정보
   @Embedded private SeatInfo seatInfo;
 
@@ -56,15 +60,19 @@ public class Ticket extends AbstractAuditEntity {
   public Ticket(
       UUID ticketId,
       UUID reservationId,
+      long productId,
       long seatId,
       String grade,
       String seatNumber,
       Long price,
-      String receiveMethod) {
+      ReceiveMethod receiveMethod) {
     this.id = TicketId.of(ticketId);
     this.reservationId = Objects.requireNonNull(reservationId, "ReservationId cannot be null");
+    this.productId = productId;
+
     this.seatInfo =
         SeatInfo.builder().seatId(seatId).grade(grade).seatNumber(seatNumber).price(price).build();
+    this.receiveMethod = receiveMethod;
 
     this.status = TicketStatus.ISSUED;
     this.usedAt = null;
@@ -74,13 +82,15 @@ public class Ticket extends AbstractAuditEntity {
   public static Ticket issue(
       UUID reservationId,
       long seatId,
+      long productId,
       String grade,
       String seatNumber,
       Long price,
-      String receiveMethod) {
+      ReceiveMethod receiveMethod) {
     return Ticket.builder()
         .reservationId(reservationId)
         .seatId(seatId)
+        .productId(productId)
         .grade(grade)
         .seatNumber(seatNumber)
         .price(price)
