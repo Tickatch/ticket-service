@@ -49,12 +49,10 @@ public class Ticket extends AbstractAuditEntity {
   private TicketStatus status;
 
   // 티켓 사용 시간
-  @Column
-  private LocalDateTime usedAt;
+  @Column private LocalDateTime usedAt;
 
   // 티켓 취소된 시간
-  @Column
-  private LocalDateTime canceledAt;
+  @Column private LocalDateTime canceledAt;
 
   // ==================================
 

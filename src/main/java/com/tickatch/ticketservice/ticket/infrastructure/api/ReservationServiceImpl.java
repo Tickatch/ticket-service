@@ -1,7 +1,5 @@
 package com.tickatch.ticketservice.ticket.infrastructure.api;
 
-import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
-import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
 import com.tickatch.ticketservice.ticket.domain.service.ReservationService;
 import com.tickatch.ticketservice.ticket.infrastructure.client.ReservationFeignClient;
 import io.github.tickatch.common.api.ApiResponse;

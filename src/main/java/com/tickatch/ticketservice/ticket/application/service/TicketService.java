@@ -154,7 +154,7 @@ public class TicketService {
     log.info("예매 id가 reservationId={}인 티켓 취소 성공", reservationId);
   }
 
-  //===========================
+  // ===========================
   // 메서드 추출
 
   // 1. 티켓 id로 조회
