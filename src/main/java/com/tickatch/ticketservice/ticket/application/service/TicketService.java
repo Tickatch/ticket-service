@@ -34,7 +34,7 @@ public class TicketService {
 
     // 1) 예매 확정 여부 확인
     if (!reservationService.isConfirmed(request.reservationId())) {
-      throw new TicketException(TicketErrorCode.RESERVATION_NOT_FOUND);
+      throw new TicketException(TicketErrorCode.RESERVATION_NOT_CONFIRMED);
     }
 
     // 2) 기존 티켓 조회
@@ -73,11 +73,9 @@ public class TicketService {
   // 2. 티켓 사용
   @Transactional
   public TicketActionResponse useTicket(UUID ticketId) {
+
     // 티켓 id로 조회
-    Ticket ticket =
-        ticketRepository
-            .findById(TicketId.of(ticketId))
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = getTicketOrThrow(ticketId);
 
     ticket.use();
 
@@ -89,10 +87,7 @@ public class TicketService {
   public TicketActionResponse cancelTicket(UUID ticketId) {
 
     // 티켓 id로 조회
-    Ticket ticket =
-        ticketRepository
-            .findById(TicketId.of(ticketId))
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = getTicketOrThrow(ticketId);
 
     ticket.cancel();
 
@@ -104,10 +99,7 @@ public class TicketService {
   public TicketDetailResponse getTicketDetail(UUID ticketId) {
 
     // 티켓 id로 조회
-    Ticket ticket =
-        ticketRepository
-            .findById(TicketId.of(ticketId))
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = getTicketOrThrow(ticketId);
 
     return TicketDetailResponse.from(ticket);
   }
@@ -130,23 +122,24 @@ public class TicketService {
       return;
     }
 
-    int cancelledCount = 0;
+    int canceledCount = 0;
     for (Ticket ticket : tickets) {
       try {
         ticket.cancel();
-        cancelledCount++;
+        canceledCount++;
       } catch (TicketException e) {
         log.warn("이미 사용된 티켓, 취소 불가. ticketId={}, reason={}", ticket.getId(), e.getMessage());
       }
     }
 
-    log.info("총 {}건의 티켓 취소 완료. productId={}", cancelledCount, productId);
+    log.info("총 {}건의 티켓 취소 완료. productId={}", canceledCount, productId);
   }
 
   // 7. 예매 id로 티켓 취소
   @Transactional
   public void cancelByReservationID(UUID reservationId) {
 
+    // 예매 id로 티켓 조회
     Ticket ticket =
         ticketRepository
             .findByReservationId(reservationId)
@@ -159,5 +152,15 @@ public class TicketService {
     }
 
     log.info("예매 id가 reservationId={}인 티켓 취소 성공", reservationId);
+  }
+
+  // ===========================
+  // 메서드 추출
+
+  // 1. 티켓 id로 조회
+  private Ticket getTicketOrThrow(UUID ticketId) {
+    return ticketRepository
+        .findById(TicketId.of(ticketId))
+        .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
   }
 }
