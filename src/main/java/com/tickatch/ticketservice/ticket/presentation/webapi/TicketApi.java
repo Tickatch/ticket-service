@@ -68,10 +68,10 @@ public class TicketApi {
   }
 
   // 6. 예매 취소에 따른 티켓 취소
-  @PostMapping("/{reservationId}/cancel")
+  @PostMapping("/reservations/{reservationId}/cancel")
   @Operation(summary = "예매 취소로 인한 티켓 취소", description = "예매가 취소되어 해당 예매의 티켓을 취소합니다.")
   public ApiResponse<Void> cancelByReservationId(@PathVariable UUID reservationId) {
-    ticketService.cancelTicket(reservationId);
+    ticketService.cancelByReservationID(reservationId);
     return ApiResponse.success();
   }
 }
