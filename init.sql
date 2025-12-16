@@ -21,6 +21,7 @@ CREATE TABLE p_ticket (
                           status          VARCHAR(20)  NOT NULL,
                           issued_at       TIMESTAMP,
                           used_at         TIMESTAMP,
+                          canceled_at     TIMESTAMP,
                           created_at      TIMESTAMP           NOT NULL,
                           created_by      VARCHAR(100)        NOT NULL,
                           updated_at      TIMESTAMP           NOT NULL,

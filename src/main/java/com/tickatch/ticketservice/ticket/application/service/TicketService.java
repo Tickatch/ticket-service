@@ -140,10 +140,12 @@ public class TicketService {
   public void cancelByReservationID(UUID reservationId) {
 
     // 예매 id로 티켓 조회
-    Ticket ticket =
-        ticketRepository
-            .findByReservationId(reservationId)
-            .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+    Ticket ticket = ticketRepository.findByReservationId(reservationId).orElse(null);
+
+    if (ticket == null) {
+      log.info("발행된 티켓이 없습니다.");
+      return;
+    }
 
     try {
       ticket.cancel();
