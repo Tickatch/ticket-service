@@ -1,0 +1,25 @@
+package com.tickatch.ticketservice.ticket.application.dto;
+
+import com.tickatch.ticketservice.ticket.domain.Ticket;
+import com.tickatch.ticketservice.ticket.domain.TicketStatus;
+import java.util.UUID;
+
+public record TicketDetailResponse(
+    UUID id,
+    UUID reservationId,
+    long seatId,
+    String seatNumber,
+    String grade,
+    Long price,
+    TicketStatus status) {
+  public static TicketDetailResponse from(Ticket ticket) {
+    return new TicketDetailResponse(
+        ticket.getId().toUuid(),
+        ticket.getReservationId(),
+        ticket.getSeatInfo().getSeatId(),
+        ticket.getSeatInfo().getSeatNumber(),
+        ticket.getSeatInfo().getGrade(),
+        ticket.getSeatInfo().getPrice(),
+        ticket.getStatus());
+  }
+}
