@@ -1,5 +1,7 @@
 package com.tickatch.ticketservice.ticket.presentation.webapi;
 
+import com.tickatch.ticketservice.global.config.AuthExtractor;
+import com.tickatch.ticketservice.global.config.AuthExtractor.AuthInfo;
 import com.tickatch.ticketservice.ticket.application.dto.TicketActionResponse;
 import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
 import com.tickatch.ticketservice.ticket.application.dto.TicketRequest;
@@ -41,21 +43,27 @@ public class TicketApi {
   @PostMapping("/{id}/use")
   @Operation(summary = "티켓 사용", description = "해당 id의 티켓을 사용합니다.")
   public ApiResponse<TicketActionResponse> useTicket(@PathVariable UUID id) {
-    return ApiResponse.success(ticketService.useTicket(id), "티켓이 사용되었습니다.");
+    AuthInfo authInfo = AuthExtractor.extract();
+
+    return ApiResponse.success(ticketService.useTicket(id, authInfo), "티켓이 사용되었습니다.");
   }
 
   // 3. 티켓 취소
   @PostMapping("/{id}/cancel")
   @Operation(summary = "티켓 취소", description = "해당 id의 티켓을 취소합니다.")
   public ApiResponse<TicketActionResponse> cancelTicket(@PathVariable UUID id) {
-    return ApiResponse.success(ticketService.cancelTicket(id), "티켓이 취소되었습니다.");
+    AuthInfo authInfo = AuthExtractor.extract();
+
+    return ApiResponse.success(ticketService.cancelTicket(id, authInfo), "티켓이 취소되었습니다.");
   }
 
   // 4. 티켓 상세 조회
   @GetMapping("/{id}")
   @Operation(summary = "티켓 상세 조회", description = "하나의 티켓의 상세 정보를 조회합니다.")
   public ApiResponse<TicketDetailResponse> getTicketDetail(@PathVariable UUID id) {
-    return ApiResponse.success(ticketService.getTicketDetail(id), "티켓 조회를 완료했습니다.");
+    AuthInfo authInfo = AuthExtractor.extract();
+
+    return ApiResponse.success(ticketService.getTicketDetail(id, authInfo), "티켓 조회를 완료했습니다.");
   }
 
   // 5. 티켓 목록 조회
@@ -64,14 +72,18 @@ public class TicketApi {
   public PageResponse<TicketResponse> getAllTickets(
       @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
           Pageable pageable) {
-    return PageResponse.from(ticketService.getAllTickets(pageable));
+    AuthInfo authInfo = AuthExtractor.extract();
+
+    return PageResponse.from(ticketService.getAllTickets(pageable, authInfo));
   }
 
   // 6. 예매 취소에 따른 티켓 취소
   @PostMapping("/reservations/{reservationId}/cancel")
   @Operation(summary = "예매 취소로 인한 티켓 취소", description = "예매가 취소되어 해당 예매의 티켓을 취소합니다.")
   public ApiResponse<Void> cancelByReservationId(@PathVariable UUID reservationId) {
-    ticketService.cancelByReservationID(reservationId);
+    AuthInfo authInfo = AuthExtractor.extract();
+
+    ticketService.cancelByReservationID(reservationId, authInfo);
     return ApiResponse.success();
   }
 }
