@@ -5,6 +5,8 @@ import com.tickatch.ticketservice.ticket.domain.TicketId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TicketRepository extends JpaRepository<Ticket, TicketId> {
@@ -13,4 +15,6 @@ public interface TicketRepository extends JpaRepository<Ticket, TicketId> {
   Optional<Ticket> findByReservationId(UUID reservationId);
 
   List<Ticket> findAllByProductId(Long productId);
+
+  Page<Ticket> findAllByCreatedBy(String createdBy, Pageable pageable);
 }

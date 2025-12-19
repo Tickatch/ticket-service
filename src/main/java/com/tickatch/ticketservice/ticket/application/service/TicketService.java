@@ -1,5 +1,6 @@
 package com.tickatch.ticketservice.ticket.application.service;
 
+import com.tickatch.ticketservice.global.config.AuthExtractor.AuthInfo;
 import com.tickatch.ticketservice.global.security.ActorExtractor;
 import com.tickatch.ticketservice.ticket.application.dto.TicketActionResponse;
 import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
@@ -12,6 +13,7 @@ import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
 import com.tickatch.ticketservice.ticket.domain.repository.TicketRepository;
 import com.tickatch.ticketservice.ticket.domain.service.ReservationService;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,7 +66,7 @@ public class TicketService {
                   "CANCELED_BY_REISSUE",
                   actor.actorType(),
                   actor.actorUserId(),
-                  java.time.LocalDateTime.now());
+                  LocalDateTime.now());
             } catch (Exception e) {
               log.warn("기존 티켓 자동 취소 로그 저장 실패. ticketId={}", t.getId().toUuid(), e);
             }
@@ -95,7 +97,7 @@ public class TicketService {
           "ISSUED",
           actor.actorType(),
           actor.actorUserId(),
-          java.time.LocalDateTime.now());
+          LocalDateTime.now());
     } catch (Exception e) {
       log.warn("티켓 발행 로그 저장 실패. ticketId={}", newTicket.getId().toUuid(), e);
     }
@@ -105,10 +107,14 @@ public class TicketService {
 
   // 2. 티켓 사용
   @Transactional
-  public TicketActionResponse useTicket(UUID ticketId) {
+  public TicketActionResponse useTicket(UUID ticketId, AuthInfo authInfo) {
 
     // 티켓 id로 조회
     Ticket ticket = getTicketOrThrow(ticketId);
+
+    if (!authInfo.isAdmin()) {
+      validateTicketOwner(ticket, authInfo);
+    }
 
     ticket.use();
 
@@ -122,7 +128,7 @@ public class TicketService {
           "USED",
           actor.actorType(),
           actor.actorUserId(),
-          java.time.LocalDateTime.now());
+          LocalDateTime.now());
     } catch (Exception e) {
       log.warn("티켓 사용 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
     }
@@ -132,10 +138,14 @@ public class TicketService {
 
   // 3. 티켓 취소
   @Transactional
-  public TicketActionResponse cancelTicket(UUID ticketId) {
+  public TicketActionResponse cancelTicket(UUID ticketId, AuthInfo authInfo) {
 
     // 티켓 id로 조회
     Ticket ticket = getTicketOrThrow(ticketId);
+
+    if (!authInfo.isAdmin()) {
+      validateTicketOwner(ticket, authInfo);
+    }
 
     ticket.cancel();
 
@@ -149,7 +159,7 @@ public class TicketService {
           "CANCELED_BY_USER",
           actor.actorType(),
           actor.actorUserId(),
-          java.time.LocalDateTime.now());
+          LocalDateTime.now());
     } catch (Exception e) {
       log.warn("티켓 취소 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
     }
@@ -159,19 +169,25 @@ public class TicketService {
 
   // 4. 티켓 상세 조회
   @Transactional(readOnly = true)
-  public TicketDetailResponse getTicketDetail(UUID ticketId) {
+  public TicketDetailResponse getTicketDetail(UUID ticketId, AuthInfo authInfo) {
 
     // 티켓 id로 조회
     Ticket ticket = getTicketOrThrow(ticketId);
+
+    if (!authInfo.isAdmin()) {
+      validateTicketOwner(ticket, authInfo);
+    }
 
     return TicketDetailResponse.from(ticket);
   }
 
   // 5. 티켓 목록 조회
   @Transactional(readOnly = true)
-  public Page<TicketResponse> getAllTickets(Pageable pageable) {
+  public Page<TicketResponse> getAllTickets(Pageable pageable, AuthInfo authInfo) {
 
-    return ticketRepository.findAll(pageable).map(TicketResponse::from);
+    return ticketRepository
+        .findAllByCreatedBy(authInfo.actorUserId(), pageable)
+        .map(TicketResponse::from);
   }
 
   // 6. 상품 취소 이벤트 처리
@@ -200,7 +216,7 @@ public class TicketService {
               "CANCELED_BY_PRODUCT",
               actor.actorType(),
               actor.actorUserId(),
-              java.time.LocalDateTime.now());
+              LocalDateTime.now());
         } catch (Exception e) {
           log.warn("상품 취소로 인한 티켓 취소 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
         }
@@ -216,7 +232,7 @@ public class TicketService {
 
   // 7. 예매 id로 티켓 취소
   @Transactional
-  public void cancelByReservationID(UUID reservationId) {
+  public void cancelByReservationID(UUID reservationId, AuthInfo authInfo) {
 
     // 예매 id로 티켓 조회
     Ticket ticket = ticketRepository.findByReservationId(reservationId).orElse(null);
@@ -224,6 +240,10 @@ public class TicketService {
     if (ticket == null) {
       log.info("발행된 티켓이 없습니다.");
       return;
+    }
+
+    if (!authInfo.isAdmin()) {
+      validateTicketOwner(ticket, authInfo);
     }
 
     try {
@@ -239,7 +259,7 @@ public class TicketService {
             "CANCELED_BY_RESERVATION",
             actor.actorType(),
             actor.actorUserId(),
-            java.time.LocalDateTime.now());
+            LocalDateTime.now());
       } catch (Exception e) {
         log.warn("예약 취소로 인한 티켓 취소 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
       }
@@ -258,5 +278,12 @@ public class TicketService {
     return ticketRepository
         .findById(TicketId.of(ticketId))
         .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+  }
+
+  // 2. 티켓 소유자 검증
+  private void validateTicketOwner(Ticket ticket, AuthInfo authInfo) {
+    if (!ticket.getCreatedBy().equals(authInfo.actorUserId())) {
+      throw new TicketException(TicketErrorCode.TICKET_OWNER_MISMATCH);
+    }
   }
 }
