@@ -1,9 +1,11 @@
 package com.tickatch.ticketservice.ticket.application.service;
 
+import com.tickatch.ticketservice.global.security.ActorExtractor;
 import com.tickatch.ticketservice.ticket.application.dto.TicketActionResponse;
 import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
 import com.tickatch.ticketservice.ticket.application.dto.TicketRequest;
 import com.tickatch.ticketservice.ticket.application.dto.TicketResponse;
+import com.tickatch.ticketservice.ticket.application.port.TicketLogPort;
 import com.tickatch.ticketservice.ticket.domain.Ticket;
 import com.tickatch.ticketservice.ticket.domain.TicketId;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
@@ -27,6 +29,7 @@ public class TicketService {
 
   private final TicketRepository ticketRepository;
   private final ReservationService reservationService;
+  private final TicketLogPort ticketLogPort;
 
   // 1. 티켓 발행
   @Transactional
@@ -50,6 +53,21 @@ public class TicketService {
 
           if (t.isIssued()) {
             t.cancel();
+
+            // 기존 티켓 자동 취소 로그 이벤트 발행
+            try {
+              ActorExtractor.ActorInfo actor = ActorExtractor.extract();
+
+              ticketLogPort.publishAction(
+                  t.getId().toUuid(),
+                  null,
+                  "CANCELED_BY_REISSUE",
+                  actor.actorType(),
+                  actor.actorUserId(),
+                  java.time.LocalDateTime.now());
+            } catch (Exception e) {
+              log.warn("기존 티켓 자동 취소 로그 저장 실패. ticketId={}", t.getId().toUuid(), e);
+            }
           }
         });
 
@@ -67,6 +85,21 @@ public class TicketService {
     // 5) 저장
     ticketRepository.save(newTicket);
 
+    // 6) 티켓 발행 로그 이벤트 발행
+    try {
+      ActorExtractor.ActorInfo actor = ActorExtractor.extract();
+
+      ticketLogPort.publishAction(
+          newTicket.getId().toUuid(),
+          newTicket.getReceiveMethod() != null ? newTicket.getReceiveMethod().name() : null,
+          "ISSUED",
+          actor.actorType(),
+          actor.actorUserId(),
+          java.time.LocalDateTime.now());
+    } catch (Exception e) {
+      log.warn("티켓 발행 로그 저장 실패. ticketId={}", newTicket.getId().toUuid(), e);
+    }
+
     return TicketResponse.from(newTicket);
   }
 
@@ -79,6 +112,21 @@ public class TicketService {
 
     ticket.use();
 
+    // 티켓 사용 로그 이벤트 발행
+    try {
+      ActorExtractor.ActorInfo actor = ActorExtractor.extract();
+
+      ticketLogPort.publishAction(
+          ticket.getId().toUuid(),
+          null,
+          "USED",
+          actor.actorType(),
+          actor.actorUserId(),
+          java.time.LocalDateTime.now());
+    } catch (Exception e) {
+      log.warn("티켓 사용 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
+    }
+
     return TicketActionResponse.fromUsed(ticket);
   }
 
@@ -90,6 +138,21 @@ public class TicketService {
     Ticket ticket = getTicketOrThrow(ticketId);
 
     ticket.cancel();
+
+    // 티켓 취소 로그 이벤트 발행
+    try {
+      ActorExtractor.ActorInfo actor = ActorExtractor.extract();
+
+      ticketLogPort.publishAction(
+          ticket.getId().toUuid(),
+          null,
+          "CANCELED_BY_USER",
+          actor.actorType(),
+          actor.actorUserId(),
+          java.time.LocalDateTime.now());
+    } catch (Exception e) {
+      log.warn("티켓 취소 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
+    }
 
     return TicketActionResponse.fromCanceled(ticket);
   }
@@ -126,6 +189,22 @@ public class TicketService {
     for (Ticket ticket : tickets) {
       try {
         ticket.cancel();
+
+        // 상품 취소로 인한 티켓 취소 로그 이벤트 발행
+        try {
+          ActorExtractor.ActorInfo actor = ActorExtractor.extract();
+
+          ticketLogPort.publishAction(
+              ticket.getId().toUuid(),
+              null,
+              "CANCELED_BY_PRODUCT",
+              actor.actorType(),
+              actor.actorUserId(),
+              java.time.LocalDateTime.now());
+        } catch (Exception e) {
+          log.warn("상품 취소로 인한 티켓 취소 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
+        }
+
         canceledCount++;
       } catch (TicketException e) {
         log.warn("이미 사용된 티켓, 취소 불가. ticketId={}, reason={}", ticket.getId(), e.getMessage());
@@ -149,6 +228,21 @@ public class TicketService {
 
     try {
       ticket.cancel();
+
+      // 예약 취소로 인한 티켓 취소 로그 이벤트 발행
+      try {
+        ActorExtractor.ActorInfo actor = ActorExtractor.extract();
+
+        ticketLogPort.publishAction(
+            ticket.getId().toUuid(),
+            null,
+            "CANCELED_BY_RESERVATION",
+            actor.actorType(),
+            actor.actorUserId(),
+            java.time.LocalDateTime.now());
+      } catch (Exception e) {
+        log.warn("예약 취소로 인한 티켓 취소 로그 저장 실패. ticketId={}", ticket.getId().toUuid(), e);
+      }
     } catch (Exception e) {
       log.warn("예매 id가 reservationId={}인 티켓 취소 실패", reservationId);
     }
