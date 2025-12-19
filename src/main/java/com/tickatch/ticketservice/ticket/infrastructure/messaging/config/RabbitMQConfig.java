@@ -41,9 +41,7 @@ public class RabbitMQConfig {
   public static final String TICKET_EXCHANGE = "tickatch.ticket";
   public static final String QUEUE_TICKET_ISSUED_NOTIFICATION =
       "tickatch.ticket.issued.notification.queue";
-  public static final String ROUTING_KEY_TICKET_ISSUED_NOTIFICATION =
-      "ticket.issued.notification";
-
+  public static final String ROUTING_KEY_TICKET_ISSUED_NOTIFICATION = "ticket.issued.notification";
 
   // ========================================
   // Exchange (Consumer도 선언 필요 - 멱등성 보장)
@@ -66,7 +64,6 @@ public class RabbitMQConfig {
     return ExchangeBuilder.topicExchange(TICKET_EXCHANGE).durable(true).build();
   }
 
-
   // ========================================
   // Queues
   // ========================================
@@ -83,9 +80,7 @@ public class RabbitMQConfig {
   public Queue ticketIssuedNotificationQueue() {
     return QueueBuilder.durable(QUEUE_TICKET_ISSUED_NOTIFICATION)
         .withArgument("x-dead-letter-exchange", TICKET_EXCHANGE + ".dlx")
-        .withArgument(
-            "x-dead-letter-routing-key",
-            "dlq." + ROUTING_KEY_TICKET_ISSUED_NOTIFICATION)
+        .withArgument("x-dead-letter-routing-key", "dlq." + ROUTING_KEY_TICKET_ISSUED_NOTIFICATION)
         .build();
   }
 
@@ -103,9 +98,7 @@ public class RabbitMQConfig {
   /** TicketIssued 바인딩 */
   @Bean
   public Binding ticketIssuedNotificationBinding(
-      Queue ticketIssuedNotificationQueue,
-      TopicExchange ticketExchange
-  ) {
+      Queue ticketIssuedNotificationQueue, TopicExchange ticketExchange) {
     return BindingBuilder.bind(ticketIssuedNotificationQueue)
         .to(ticketExchange)
         .with(ROUTING_KEY_TICKET_ISSUED_NOTIFICATION);
@@ -137,24 +130,17 @@ public class RabbitMQConfig {
   // ========================================
   @Bean
   public TopicExchange ticketDeadLetterExchange() {
-    return ExchangeBuilder
-        .topicExchange(TICKET_EXCHANGE + ".dlx")
-        .durable(true)
-        .build();
+    return ExchangeBuilder.topicExchange(TICKET_EXCHANGE + ".dlx").durable(true).build();
   }
 
   @Bean
   public Queue ticketIssuedNotificationDlq() {
-    return QueueBuilder
-        .durable(QUEUE_TICKET_ISSUED_NOTIFICATION + ".dlq")
-        .build();
+    return QueueBuilder.durable(QUEUE_TICKET_ISSUED_NOTIFICATION + ".dlq").build();
   }
 
   @Bean
   public Binding ticketIssuedNotificationDlqBinding(
-      Queue ticketIssuedNotificationDlq,
-      TopicExchange ticketDeadLetterExchange
-  ) {
+      Queue ticketIssuedNotificationDlq, TopicExchange ticketDeadLetterExchange) {
     return BindingBuilder.bind(ticketIssuedNotificationDlq)
         .to(ticketDeadLetterExchange)
         .with("dlq." + ROUTING_KEY_TICKET_ISSUED_NOTIFICATION);

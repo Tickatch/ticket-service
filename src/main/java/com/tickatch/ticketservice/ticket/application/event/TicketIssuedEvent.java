@@ -20,14 +20,9 @@ public record TicketIssuedEvent(
     LocalDateTime performanceDate,
     String artHallName,
     String stageName,
-    String seatNumber
-) {
+    String seatNumber) {
   public static TicketIssuedEvent of(
-      Ticket ticket,
-      ReservationInfo reservation,
-      UserInfo user,
-      ProductInfo product
-  ) {
+      Ticket ticket, ReservationInfo reservation, UserInfo user, ProductInfo product) {
     String recipient = resolveRecipient(ticket.getReceiveMethod(), user);
 
     return new TicketIssuedEvent(
@@ -42,19 +37,14 @@ public record TicketIssuedEvent(
         product.performanceDate(),
         product.artHallName(),
         product.stageName(),
-        ticket.getSeatInfo().getSeatNumber()
-    );
+        ticket.getSeatInfo().getSeatNumber());
   }
 
-  private static String resolveRecipient(
-      ReceiveMethod receiveMethod,
-      UserInfo user
-  ) {
+  private static String resolveRecipient(ReceiveMethod receiveMethod, UserInfo user) {
     return switch (receiveMethod) {
       case EMAIL -> user.email();
       case MMS -> user.phone();
-      default ->
-          throw new IllegalStateException("알림 대상이 아닌 수령 방식: " + receiveMethod);
+      default -> throw new IllegalStateException("알림 대상이 아닌 수령 방식: " + receiveMethod);
     };
   }
 }

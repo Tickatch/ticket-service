@@ -109,8 +109,7 @@ public class TicketService {
     // 7) 티켓 생성 이벤트 발행
     if (newTicket.getReceiveMethod() != ReceiveMethod.ON_SITE) {
       applicationEventPublisher.publishEvent(
-          new TicketIssuedDomainEvent(newTicket.getId().toUuid())
-      );
+          new TicketIssuedDomainEvent(newTicket.getId().toUuid()));
     }
 
     return TicketResponse.from(newTicket);

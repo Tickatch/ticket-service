@@ -13,5 +13,4 @@ public interface UserFeignClient {
   // 수령자 이메일 또는 전화번호 가져오기
   @GetMapping("/api/v1/user/customers/{reserverId}")
   ApiResponse<UserClientResponse> getRecipientInfo(@PathVariable UUID reserverId);
-
 }

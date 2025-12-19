@@ -5,19 +5,12 @@ import com.tickatch.ticketservice.ticket.domain.dto.ReservationInfo;
 import java.util.UUID;
 
 public record ReservationClientResponse(
-    @JsonProperty("id")
-    UUID reservationId,
+    @JsonProperty("id") UUID reservationId,
     String reserverName,
     UUID reserverId,
-    String reservationNumber
-) {
+    String reservationNumber) {
 
   public ReservationInfo toReservationInfo() {
-    return new ReservationInfo(
-        reservationId,
-        reserverName,
-        reserverId,
-        reservationNumber
-    );
+    return new ReservationInfo(reservationId, reserverName, reserverId, reservationNumber);
   }
 }
