@@ -7,8 +7,10 @@ import com.tickatch.ticketservice.ticket.application.dto.TicketDetailResponse;
 import com.tickatch.ticketservice.ticket.application.dto.TicketRequest;
 import com.tickatch.ticketservice.ticket.application.dto.TicketResponse;
 import com.tickatch.ticketservice.ticket.application.port.TicketLogPort;
+import com.tickatch.ticketservice.ticket.domain.ReceiveMethod;
 import com.tickatch.ticketservice.ticket.domain.Ticket;
 import com.tickatch.ticketservice.ticket.domain.TicketId;
+import com.tickatch.ticketservice.ticket.domain.event.TicketIssuedDomainEvent;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketErrorCode;
 import com.tickatch.ticketservice.ticket.domain.exception.TicketException;
 import com.tickatch.ticketservice.ticket.domain.repository.TicketRepository;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class TicketService {
   private final TicketRepository ticketRepository;
   private final ReservationService reservationService;
   private final TicketLogPort ticketLogPort;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   // 1. 티켓 발행
   @Transactional
@@ -100,6 +104,13 @@ public class TicketService {
           LocalDateTime.now());
     } catch (Exception e) {
       log.warn("티켓 발행 로그 저장 실패. ticketId={}", newTicket.getId().toUuid(), e);
+    }
+
+    // 7) 티켓 생성 이벤트 발행
+    if (newTicket.getReceiveMethod() != ReceiveMethod.ON_SITE) {
+      applicationEventPublisher.publishEvent(
+          new TicketIssuedDomainEvent(newTicket.getId().toUuid())
+      );
     }
 
     return TicketResponse.from(newTicket);
