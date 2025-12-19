@@ -185,7 +185,8 @@ public class TicketService {
   @Transactional(readOnly = true)
   public Page<TicketResponse> getAllTickets(Pageable pageable, AuthInfo authInfo) {
 
-    return ticketRepository.findAllByCreatedBy(authInfo.actorUserId(), pageable)
+    return ticketRepository
+        .findAllByCreatedBy(authInfo.actorUserId(), pageable)
         .map(TicketResponse::from);
   }
 

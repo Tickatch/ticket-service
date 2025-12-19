@@ -12,11 +12,9 @@ Spring Security Context에서 안전하게 꺼내는 공통 유틸
 public class AuthExtractor {
 
   public static AuthInfo extract() {
-    Authentication auth =
-        SecurityContextHolder.getContext().getAuthentication();
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-    if (auth == null || !auth.isAuthenticated()
-        || auth.getPrincipal().equals("anonymousUser")) {
+    if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
       return AuthInfo.anonymous();
     }
 
@@ -28,7 +26,6 @@ public class AuthExtractor {
 
     return AuthInfo.anonymous();
   }
-
 
   public record AuthInfo(String actorType, String actorUserId) {
 
