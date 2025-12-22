@@ -48,6 +48,9 @@ public class Ticket extends AbstractAuditEntity {
   @Column(nullable = false)
   private TicketStatus status;
 
+  // 티켓 발행 시간
+  @Column private LocalDateTime issuedAt;
+
   // 티켓 사용 시간
   @Column private LocalDateTime usedAt;
 
@@ -78,6 +81,7 @@ public class Ticket extends AbstractAuditEntity {
     this.receiveMethod = receiveMethod;
 
     this.status = TicketStatus.ISSUED;
+    this.issuedAt = LocalDateTime.now();
     this.usedAt = null;
     this.canceledAt = null;
   }

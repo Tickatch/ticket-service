@@ -29,12 +29,39 @@ public class RabbitMQConfig {
   /** Ticket 라우팅 키 */
   public static final String ROUTING_KEY_CANCELLED_TICKET = "product.cancelled.ticket";
 
+  /** Log 서비스 Exchange (공통 로그용) */
+  public static final String LOG_EXCHANGE = "tickatch.log";
+
+  /** Ticket 로그 라우팅 키 */
+  public static final String ROUTING_KEY_TICKET_LOG = "ticket.log";
+
+  // ==================================================
+  // Ticket → Notification
+  // ==================================================
+  public static final String TICKET_EXCHANGE = "tickatch.ticket";
+  public static final String QUEUE_TICKET_ISSUED_NOTIFICATION =
+      "tickatch.ticket.issued.notification.queue";
+  public static final String ROUTING_KEY_TICKET_ISSUED_NOTIFICATION = "ticket.issued.notification";
+
   // ========================================
   // Exchange (Consumer도 선언 필요 - 멱등성 보장)
   // ========================================
+  // 상품
   @Bean
   public TopicExchange productExchange() {
     return ExchangeBuilder.topicExchange(productExchange).durable(true).build();
+  }
+
+  // 로그
+  @Bean
+  public TopicExchange logExchange() {
+    return ExchangeBuilder.topicExchange(LOG_EXCHANGE).durable(true).build();
+  }
+
+  // 티켓에서 알림
+  @Bean
+  public TopicExchange ticketExchange() {
+    return ExchangeBuilder.topicExchange(TICKET_EXCHANGE).durable(true).build();
   }
 
   // ========================================
@@ -48,6 +75,15 @@ public class RabbitMQConfig {
         .build();
   }
 
+  /** Ticket 발급 → 알림용 큐 */
+  @Bean
+  public Queue ticketIssuedNotificationQueue() {
+    return QueueBuilder.durable(QUEUE_TICKET_ISSUED_NOTIFICATION)
+        .withArgument("x-dead-letter-exchange", TICKET_EXCHANGE + ".dlx")
+        .withArgument("x-dead-letter-routing-key", "dlq." + ROUTING_KEY_TICKET_ISSUED_NOTIFICATION)
+        .build();
+  }
+
   // ========================================
   // Bindings
   // ========================================
@@ -57,6 +93,15 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(productCancelledTicketQueue)
         .to(productExchange)
         .with(ROUTING_KEY_CANCELLED_TICKET);
+  }
+
+  /** TicketIssued 바인딩 */
+  @Bean
+  public Binding ticketIssuedNotificationBinding(
+      Queue ticketIssuedNotificationQueue, TopicExchange ticketExchange) {
+    return BindingBuilder.bind(ticketIssuedNotificationQueue)
+        .to(ticketExchange)
+        .with(ROUTING_KEY_TICKET_ISSUED_NOTIFICATION);
   }
 
   // ========================================
@@ -78,6 +123,27 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(deadLetterTicketQueue)
         .to(deadLetterExchange)
         .with("dlq." + ROUTING_KEY_CANCELLED_TICKET);
+  }
+
+  // ========================================
+  // Dead Letter (Ticket)
+  // ========================================
+  @Bean
+  public TopicExchange ticketDeadLetterExchange() {
+    return ExchangeBuilder.topicExchange(TICKET_EXCHANGE + ".dlx").durable(true).build();
+  }
+
+  @Bean
+  public Queue ticketIssuedNotificationDlq() {
+    return QueueBuilder.durable(QUEUE_TICKET_ISSUED_NOTIFICATION + ".dlq").build();
+  }
+
+  @Bean
+  public Binding ticketIssuedNotificationDlqBinding(
+      Queue ticketIssuedNotificationDlq, TopicExchange ticketDeadLetterExchange) {
+    return BindingBuilder.bind(ticketIssuedNotificationDlq)
+        .to(ticketDeadLetterExchange)
+        .with("dlq." + ROUTING_KEY_TICKET_ISSUED_NOTIFICATION);
   }
 
   // ========================================
